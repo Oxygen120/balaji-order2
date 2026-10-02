@@ -1,0 +1,1 @@
+export function verifyRouteAccess(rule,user){if(!rule||rule==='public')return true;if(rule==='authenticated'||rule==='private'||rule==='protected')return !!user;if(!user)return false;try{const profile=user.profile||'';const fn=new Function('profile',`return (${rule});`);return fn(profile);}catch{return false;}}
