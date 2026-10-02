@@ -1,0 +1,13 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { sdk } from '@/services/sdk';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+export const route = { path: '/products/new', layout: 'owner', access: 'public' };
+export default function ProductsNew() {
+  const navigate = useNavigate(); const [name,setName]=useState(''); const [mrp,setMrp]=useState(''); const [purchase,setPurchase]=useState(''); const [unit,setUnit]=useState('Patti'); const [image,setImage]=useState(''); const [favourite,setFavourite]=useState(false); const [saving,setSaving]=useState(false);
+  function chooseImage(e){ const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader(); reader.onload=()=>setImage(String(reader.result||'')); reader.readAsDataURL(file); }
+  async function save(){ if(!name.trim()||!mrp||!purchase){toast.error('Fill product name, MRP and purchase rate.');return;} setSaving(true); try{const res=await sdk.table('products_c').create({Name:name.trim(),mrp_c:Number(mrp),purchase_rate_c:Number(purchase),purchase_unit_c:unit,image_c:image,favourite_c:favourite,sort_position_c:Date.now()}); if(!res.data?.length){toast.error(res.messages?.[0]||'Could not save product.');return;} toast.success('Product added.');navigate('/products');}finally{setSaving(false);} }
+  return <div className="mx-auto max-w-2xl space-y-5"><Link to="/products" className="text-sm font-semibold text-primary">← Back to Products</Link><div><h1 className="text-3xl font-bold">Add product</h1><p className="text-sm text-muted-foreground">Add product details and an image.</p></div><div className="space-y-4 rounded-xl border border-border bg-card p-4"><div><label className="mb-2 block text-sm font-medium">Product image</label><Input type="file" accept="image/*" onChange={chooseImage}/></div><Input value={name} onChange={e=>setName(e.target.value)} placeholder="Product name"/><Input type="number" value={mrp} onChange={e=>setMrp(e.target.value)} placeholder="MRP / selling rate"/><Input type="number" value={purchase} onChange={e=>setPurchase(e.target.value)} placeholder="Purchase rate"/><select value={unit} onChange={e=>setUnit(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option>Patti</option><option>Cartoon</option><option>Unit</option></select><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={favourite} onChange={e=>setFavourite(e.target.checked)}/>Favourite product</label><Button disabled={saving} onClick={save} className="w-full">{saving?'Saving…':'Save product'}</Button></div></div>;
+}
